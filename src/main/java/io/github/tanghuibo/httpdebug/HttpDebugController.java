@@ -86,19 +86,20 @@ public class HttpDebugController {
             this.method = method;
         }
 
-        @Override
-        public String toString() {
-            return  "url    =====> " + url + '\n' +
-                    "method =====> " + method + '\n' +
-                    "headers ====> " + headers;
-        }
-
         public String getBody() {
             return body;
         }
 
         public void setBody(String body) {
             this.body = body;
+        }
+
+        @Override
+        public String toString() {
+            return  "url    =====> " + url + '\n' +
+                    "method =====> " + method + '\n' +
+                    "headers ====> " + headers + '\n' +
+                    "body ====> " + body;
         }
     }
 }
