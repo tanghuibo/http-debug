@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,15 +24,20 @@ public class HttpDebugController {
     Logger log = LoggerFactory.getLogger(HttpDebugController.class);
 
     @RequestMapping("/**")
-    public HttpDebugResult debug(ServerHttpRequest request) {
-        HttpDebugResult httpDebugResult = new HttpDebugResult();
-        httpDebugResult.setHeaders(request.getHeaders());
-        httpDebugResult.setUrl(request.getURI().toString());
-        httpDebugResult.setMethod(Optional.ofNullable(request.getMethod()).map(Enum::name).orElse(null));
-
-        log.info("receive request:\n==========================================\n{}\n==========================================", httpDebugResult);
-
-        return httpDebugResult;
+    public Mono<HttpDebugResult> debug(ServerHttpRequest request) {
+        return request.getBody()
+                .map(dataBuffer -> dataBuffer.toString(StandardCharsets.UTF_8))
+                .defaultIfEmpty("")
+                .reduce((a, b) -> a + b)
+                .map(body -> {
+                    HttpDebugResult httpDebugResult = new HttpDebugResult();
+                    httpDebugResult.setHeaders(request.getHeaders());
+                    httpDebugResult.setUrl(request.getURI().toString());
+                    httpDebugResult.setMethod(Optional.ofNullable(request.getMethod()).map(Enum::name).orElse(null));
+                    httpDebugResult.setBody(body);
+                    log.info("receive request:\n==========================================\n{}\n==========================================", httpDebugResult);
+                    return httpDebugResult;
+                });
     }
 
     public static class HttpDebugResult {
@@ -49,6 +56,11 @@ public class HttpDebugController {
          * 方法
          */
         private String method;
+
+        /**
+         * 请求体
+         */
+        private String body;
 
         public String getUrl() {
             return url;
@@ -79,6 +91,14 @@ public class HttpDebugController {
             return  "url    =====> " + url + '\n' +
                     "method =====> " + method + '\n' +
                     "headers ====> " + headers;
+        }
+
+        public String getBody() {
+            return body;
+        }
+
+        public void setBody(String body) {
+            this.body = body;
         }
     }
 }
