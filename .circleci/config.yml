@@ -1,34 +1,26 @@
 version: 2.1
 jobs:
   build:
-    working_directory: ~/project
     docker:
-      - image: circleci/windows@windows-2019
-
+      - image: circleci/openjdk:8-jdk  # 使用Java 8环境的Docker镜像
     steps:
-      - checkout
+      - checkout  # 检出代码
+      - run: mvn install  # 运行mvn install命令来打包
 
-      # 安装JDK 8
+      # 将打包结果推送到release分支下日期.jar
       - run:
-          name: Install JDK 8
+          name: Copy JAR to release branch
           command: |
-            choco install openjdk8 --version 8.292.10
-            refreshenv
+            mkdir -p release
+            date=$(date +%Y%m%d)  # 获取当前日期，格式：年月日
+            cp target/*.jar release/${date}.jar
 
-      # 运行 Maven install 命令
+      # 推送代码变更到release分支
       - run:
-          name: Build and package
-          command: mvn install
-
-      # 推送打包结果到 release 分支下
-      - run:
-          name: Push to release branch
+          name: Commit and push changes
           command: |
-            # 替换下面的 <日期> 为当前日期，例如 20230804
-            $date = Get-Date -Format "yyyyMMdd"
-            $jarFileName = "target\your_artifact.jar"
-            $targetBranch = "release"
-            git checkout -b $targetBranch
-            git add $jarFileName
-            git commit -m "Adding build for $date"
-            git push origin $targetBranch
+            git config --global user.email "circleci@example.com"
+            git config --global user.name "CircleCI"
+            git add release/*
+            git commit -m "Auto-push release JAR [skip ci]"
+            git push origin HEAD:release
