@@ -1,26 +1,22 @@
 version: 2.1
+
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk  # 使用Java 8环境的Docker镜像
+      - image: circleci/openjdk:8-jdk  # 使用Java 8的Docker镜像
+
     steps:
       - checkout  # 检出代码
-      - run: mvn install  # 运行mvn install命令来打包
 
-      # 将打包结果推送到release分支下日期.jar
       - run:
-          name: Copy JAR to release branch
-          command: |
-            mkdir -p release
-            date=$(date +%Y%m%d)  # 获取当前日期，格式：年月日
-            cp target/*.jar release/${date}.jar
+          name: Build and package
+          command: mvn clean install  # 执行Maven的clean和install命令
 
-      # 推送代码变更到release分支
-      - run:
-          name: Commit and push changes
-          command: |
-            git config --global user.email "circleci@example.com"
-            git config --global user.name "CircleCI"
-            git add release/*
-            git commit -m "Auto-push release JAR [skip ci]"
-            git push origin HEAD:release
+      - store_artifacts:  # 将target目录作为产物保存
+          path: /target  # 修改为您的项目中target目录的路径
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
