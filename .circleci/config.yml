@@ -12,10 +12,10 @@ jobs:
           name: Build and package
           command: |
             mvn clean install;
-            ls;
+            ls target;
 
       - store_artifacts:  # 将target目录作为产物保存
-          path: /target  # 修改为您的项目中target目录的路径
+          path: target  # 修改为您的项目中target目录的路径
 
 workflows:
   version: 2
