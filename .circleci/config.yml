@@ -2,7 +2,6 @@ version: 2.1
 
 jobs:
   build:
-    working_directory: /
     docker:
       - image: circleci/openjdk:8-jdk  # 使用Java 8的Docker镜像
 
@@ -12,6 +11,7 @@ jobs:
       - run:
           name: Build and package
           command: mvn clean install  # 执行Maven的clean和install命令
+          command: ls
 
       - store_artifacts:  # 将target目录作为产物保存
           path: /target  # 修改为您的项目中target目录的路径
