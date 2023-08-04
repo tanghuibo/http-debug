@@ -2,6 +2,7 @@ version: 2.1
 
 jobs:
   build:
+    working_directory: /
     docker:
       - image: circleci/openjdk:8-jdk  # 使用Java 8的Docker镜像
 
